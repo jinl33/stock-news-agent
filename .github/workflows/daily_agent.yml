@@ -1,0 +1,37 @@
+name: Daily Macro Intelligence Report
+
+on:
+  schedule:
+    # GitHub uses UTC time. 00:00 UTC is exactly 09:00 AM KST.
+    - cron: '0 0 * * *'
+  workflow_dispatch: # This adds a "Run Workflow" button so you can test it manually
+
+jobs:
+  run-and-report:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' 
+
+      - name: Install Dependencies
+        # Make sure to include all packages your script imports
+        run: pip install requests feedparser ollama
+
+      - name: Execute Autonomous Agent
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+        run: python agent.py
+
+      - name: Save Kakao Tokens (Auto-Commit)
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: auto-refresh Kakao tokens [skip ci]"
+          file_pattern: kakao_tokens.json
