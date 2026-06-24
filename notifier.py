@@ -1,10 +1,11 @@
 import json
 import os
 import requests
-from config import KAKAO_REST_API_KEY, KAKAO_AUTH_CODE, KAKAO_TOKEN_FILE, KAKAO_REDIRECT_URI
+from config import KAKAO_REST_API_KEY, KAKAO_AUTH_CODE, KAKAO_TOKEN_FILE, KAKAO_CLIENT_SECRET
 
 _TOKEN_URL = "https://kauth.kakao.com/oauth/token"
 _SEND_URL = "https://kapi.kakao.com/v2/api/talk/memo/default/send"
+_REDIRECT_URI = "https://example.com/oauth"
 
 def _load_tokens() -> dict | None:
     if os.path.exists(KAKAO_TOKEN_FILE):
@@ -17,15 +18,27 @@ def _save_tokens(tokens: dict) -> None:
         json.dump(tokens, f, indent=2)
 
 def _request_initial_tokens() -> dict:
-    resp = requests.post(
-        _TOKEN_URL,
-        data={
-            "grant_type": "authorization_code",
-            "client_id": KAKAO_REST_API_KEY,
-            "redirect_uri": KAKAO_REDIRECT_URI,
-            "code": KAKAO_AUTH_CODE,
-        },
-    )
+    payload = {
+        "grant_type": "authorization_code",
+        "client_id": KAKAO_REST_API_KEY,
+        "client_secret": KAKAO_CLIENT_SECRET,
+        "redirect_uri": _REDIRECT_URI,
+        "code": KAKAO_AUTH_CODE,
+    }
+    
+    print("\n--- DEBUG PAYLOAD ---")
+    print(f"API Key: {KAKAO_REST_API_KEY}")
+    print(f"Client Secret: {KAKAO_CLIENT_SECRET}")
+    print(f"Auth Code: {KAKAO_AUTH_CODE}")
+    print("---------------------\n")
+    
+    resp = requests.post(_TOKEN_URL, data=payload)
+    
+    if resp.status_code != 200:
+        print("\n=== KAKAO API ERROR ===")
+        print(resp.text)
+        print("=======================\n")
+        
     resp.raise_for_status()
     tokens = resp.json()
     _save_tokens(tokens)
@@ -37,6 +50,7 @@ def _refresh_tokens(refresh_token: str) -> dict:
         data={
             "grant_type": "refresh_token",
             "client_id": KAKAO_REST_API_KEY,
+            "client_secret": KAKAO_CLIENT_SECRET,
             "refresh_token": refresh_token,
         },
     )

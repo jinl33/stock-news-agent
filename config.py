@@ -6,6 +6,7 @@ load_dotenv()
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gemma4:e4b")
 
 KAKAO_REST_API_KEY = os.getenv("KAKAO_REST_API_KEY")
+KAKAO_CLIENT_SECRET = os.getenv("KAKAO_CLIENT_SECRET")
 KAKAO_AUTH_CODE = os.getenv("KAKAO_AUTH_CODE")
 
 KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI", "https://example.com/oauth")

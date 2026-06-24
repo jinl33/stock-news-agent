@@ -8,7 +8,6 @@ def _strip_html(raw: str) -> str:
 
 
 def _parse_published(entry) -> int:
-    # feedparser normalises published_parsed to a time.struct_time; fall back to 0
     t = getattr(entry, "published_parsed", None)
     if t:
         import calendar

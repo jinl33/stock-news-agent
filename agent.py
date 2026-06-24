@@ -11,36 +11,42 @@ _IMPORTANCE_ICON = {"high": "🔴", "medium": "🟡"}
 
 
 def _format_report(stories: list[dict]) -> str:
-    # Group by theme, preserving insertion order
-    grouped: dict[str, list[dict]] = {}
-    for story in stories:
-        theme = story.get("theme", "Other")
-        grouped.setdefault(theme, []).append(story)
-
-    lines = ["[Global Macro Intelligence Report]", ""]
+    if not stories:
+        return "No actionable intelligence found today."
+    
+    lines = ["[Global Macro & Portfolio Intelligence]"]
+    lines.append("=======================")
+    
+    # Group by theme
+    grouped = {}
+    for s in stories:
+        theme = s.get("theme", "Macro")
+        grouped.setdefault(theme, []).append(s)
+        
     for theme, items in grouped.items():
-        icon = _THEME_ICON.get(theme, "📌")
-        lines.append(f"{icon} {theme}")
+        lines.append(f"\n📌 {theme.upper()}")
         for item in items:
-            imp_icon = _IMPORTANCE_ICON.get(item.get("importance", "medium"), "🟡")
-            headline = item.get("headline", "")
-            summary = item.get("summary", "")
-            lines.append(f"  {imp_icon} {headline}")
-            lines.append(f"     {summary}")
-        lines.append("")
-
-    return "\n".join(lines).rstrip()
+            ticker = f" [{item.get('ticker')}]" if item.get("ticker") and item.get("ticker") != "None" else ""
+            lines.append(f"🔴 {item.get('headline_ko')}{ticker}")
+            lines.append(f"   {item.get('headline_en')}")
+            lines.append(f"   💡 {item.get('analysis_ko')}")
+            lines.append(f"   💡 {item.get('analysis_en')}\n")
+            
+    return "\n".join(lines)
 
 
 def run():
     print("Fetching RSS feeds...")
-    articles = fetch_articles()
-    print(f"  {len(articles)} articles collected.")
+    stories = fetch_articles()
 
-    print("Analyzing with Gemma 4 via Ollama...")
-    stories = analyze(articles)
+    print("Analyzing...")
+    analyzed = analyze(stories)
 
-    report = _format_report(stories)
+    if not analyzed:
+        print("Inference failed or no actionable news found. Aborting alert.")
+        return
+
+    report = _format_report(analyzed)
     print("\n--- Report Preview ---")
     print(report)
     print("----------------------\n")
@@ -48,7 +54,6 @@ def run():
     print("Sending KakaoTalk notification...")
     send_message(report)
     print("Done.")
-
 
 if __name__ == "__main__":
     run()
