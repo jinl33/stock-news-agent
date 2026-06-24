@@ -1,0 +1,6 @@
+requests
+yfinance
+python-dotenv
+ollama
+feedparser
+beautifulsoup4
