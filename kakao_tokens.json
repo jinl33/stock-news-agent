@@ -1,8 +1,6 @@
 {
-  "access_token": "zWRpPSPPu15BT-jxumv8f22Dkp0YLypDAAAAAQoNIFoAAAGe_IWwyuAsyCcGfplL",
+  "access_token": "C13Q7Fy-6KJvHsRNLu2EM-P8XPq5FW8wAAAAAQoXFO4AAAGe_OptouAsyCcGfplL",
   "token_type": "bearer",
-  "refresh_token": "mPSXp0Eqb4l7qsR626wKsCEVSLPKhOSxAAAAAgoNIFoAAAGe_IWwyeAsyCcGfplL",
   "expires_in": 21599,
-  "scope": "talk_message",
-  "refresh_token_expires_in": 5183999
+  "refresh_token": "mPSXp0Eqb4l7qsR626wKsCEVSLPKhOSxAAAAAgoNIFoAAAGe_IWwyeAsyCcGfplL"
 }
