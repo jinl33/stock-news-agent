@@ -2,9 +2,8 @@ name: Daily Macro Intelligence Report
 
 on:
   schedule:
-    # GitHub uses UTC time. 00:00 UTC is exactly 09:00 AM KST.
     - cron: '0 0 * * *'
-  workflow_dispatch: # This adds a "Run Workflow" button so you can test it manually
+  workflow_dispatch:
 
 jobs:
   run-and-report:
@@ -20,8 +19,7 @@ jobs:
           python-version: '3.11' 
 
       - name: Install Dependencies
-        # Make sure to include all packages your script imports
-        run: pip install requests feedparser ollama
+        run: pip install requests feedparser ollama python-dotenv beautifulsoup4
 
       - name: Execute Autonomous Agent
         env:
