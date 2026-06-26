@@ -2,6 +2,13 @@ import feedparser
 from bs4 import BeautifulSoup
 from config import NEWS_FEEDS
 
+RSS_FEEDS = {
+    "WSJ": "https://feeds.a.dj.com/rss/WSJcomUSBusiness.xml",
+    "CNBC": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664",
+    "Yahoo Finance": "https://finance.yahoo.com/news/rssindex",
+    "Financial Times": "https://www.ft.com/?format=rss"
+}
+
 
 def _strip_html(raw: str) -> str:
     return BeautifulSoup(raw or "", "html.parser").get_text(separator=" ").strip()
@@ -15,24 +22,27 @@ def _parse_published(entry) -> int:
     return 0
 
 
-def fetch_articles() -> list[dict]:
+def fetch_articles(limit_per_feed=4) -> list[dict]:
     articles = []
-    for feed_url in NEWS_FEEDS:
-        feed = feedparser.parse(feed_url)
-        for entry in feed.entries:
-            articles.append(
-                {
-                    "title": entry.get("title", "").strip(),
-                    "link": entry.get("link", ""),
-                    "summary": _strip_html(entry.get("summary", "")),
-                    "_published_ts": _parse_published(entry),
+    for source_name, feed_url in RSS_FEEDS.items():
+        try:
+            feed = feedparser.parse(feed_url)
+
+            for entry in feed.entries[:limit_per_feed]:
+                article = {
+                    "publisher": source_name,
+                    "headline": entry.get("title", "No Title"),
+                    "url": entry.get("link", "No Link")
                 }
-            )
+                articles.append(article)
 
-    articles.sort(key=lambda a: a["_published_ts"], reverse=True)
+        except Exception as e:
+            print(f"Failed to fetch from {source_name}: {e}")
 
-    # Drop internal sort key before returning
+    print(f"Successfully aggregated {len(articles)} articles from sources.")
+    return articles
+
+if __name__ == "__main__":
+    articles = fetch_articles()
     for a in articles:
-        del a["_published_ts"]
-
-    return articles[:20]
+        print(f"{a['publisher']} {a['headline']} - {a['url']}")
