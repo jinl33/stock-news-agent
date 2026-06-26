@@ -9,9 +9,9 @@ You are an expert bilingual (English/Korean) financial analyst managing a high-n
 Review the provided market news and select the top 6 most critical stories. 
 
 SECTOR RULES:
-- FOCUS: "Macro", "Tech/AI", "Space", and "E-Commerce".
+- MAIN-SECTORS: "Macro", "Tech/AI", "Space", and "E-Commerce".
+- SUB-SECTORS: Biotech and any Research Breakthroughs
 - PORTFOLIO TARGETS: Prioritize any news affecting Palantir (PLTR), SpaceX, Apple (AAPL), Amazon (AMZN), and Microsoft (MSFT).
-- SUB-SECTORS: Biotech and Pharma.
 
 For each story, provide a comprehensive, institutional-grade analysis in BOTH English and Korean.
 You MUST respond strictly with a valid JSON array. Follow this exact structure:
@@ -77,7 +77,6 @@ def analyze(stock_data: list[dict]) -> list[dict]:
         try:
             parsed_data = json.loads(raw_output)
         except json.JSONDecodeError:
-            # Fallback to regex extraction if wrapped in conversational text
             match = re.search(r'\[.*\]', raw_output, re.DOTALL)
             if match:
                 parsed_data = json.loads(match.group(0))
@@ -101,7 +100,6 @@ def analyze(stock_data: list[dict]) -> list[dict]:
                         "theme": item.get("theme", "Macro"),
                         "ticker": item.get("ticker", "None"),
                         "importance": item.get("importance", "medium"),
-                        # Fallback smoothly to old single-language keys if the model reverts layout shapes
                         "headline_en": item.get("headline_en", item.get("headline", "Untitled")),
                         "headline_ko": item.get("headline_ko", item.get("headline", "제목 없음")),
                         "analysis_en": item.get("analysis_en", item.get("summary", "No analysis provided.")),
