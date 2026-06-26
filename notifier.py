@@ -70,19 +70,40 @@ def _get_access_token() -> str:
         tokens = _refresh_tokens(tokens["refresh_token"])
     return tokens["access_token"]
 
-def send_message(text: str) -> None:
+def send_message(report: str):
     access_token = _get_access_token()
-    template = {
-        "object_type": "text",
-        "text": text,
-        "link": {"web_url": "", "mobile_web_url": ""},
+    url = "https://kapi.kakao.com/v2/api/talk/memo/default/send"
+    headers = {
+        "Authorization": f"Bearer {access_token}"
     }
-    resp = requests.post(
-        _SEND_URL,
-        headers={"Authorization": f"Bearer {access_token}"},
-        data={"template_object": json.dumps(template)},
-    )
-    resp.raise_for_status()
-    result = resp.json()
-    if result.get("result_code") != 0:
-        raise RuntimeError(f"KakaoTalk send failed: {result}")
+    
+    paragraphs = report.split('\n\n')
+    chunks = []
+    current_chunk = ""
+    
+    for p in paragraphs:
+        if len(current_chunk) + len(p) < 900:
+            current_chunk += p + "\n\n"
+        else:
+            chunks.append(current_chunk.strip())
+            current_chunk = p + "\n\n"
+            
+    if current_chunk:
+        chunks.append(current_chunk.strip())
+        
+    for i, chunk in enumerate(chunks):
+        page_marker = f"[{i+1}/{len(chunks)}]\n" if len(chunks) > 1 else ""
+        
+        data = {
+            "template_object": json.dumps({
+                "object_type": "text",
+                "text": page_marker + chunk,
+                "link": {
+                    "web_url": "https://finance.yahoo.com"
+                }
+            }, ensure_ascii=False)
+        }
+        
+        response = requests.post(url, headers=headers, data=data)
+        response.raise_for_status()
+        print(f"Message part {i+1}/{len(chunks)} sent successfully.")

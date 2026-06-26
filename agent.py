@@ -9,10 +9,9 @@ _THEME_ICON = {
 }
 _IMPORTANCE_ICON = {"high": "🔴", "medium": "🟡"}
 
-
 def _format_report(stories: list[dict]) -> str:
     if not stories:
-        return "No actionable intelligence found today."
+        return "오늘의 주요 시장 뉴스가 없습니다."
     
     lines = ["[Global Macro & Portfolio Intelligence]"]
     lines.append("=======================")
@@ -27,13 +26,11 @@ def _format_report(stories: list[dict]) -> str:
         lines.append(f"\n📌 {theme.upper()}")
         for item in items:
             ticker = f" [{item.get('ticker')}]" if item.get("ticker") and item.get("ticker") != "None" else ""
-            lines.append(f"🔴 {item.get('headline_ko')}{ticker}")
-            lines.append(f"   {item.get('headline_en')}")
-            lines.append(f"   💡 {item.get('analysis_ko')}")
-            lines.append(f"   💡 {item.get('analysis_en')}\n")
             
-    return "\n".join(lines)
-
+            lines.append(f"🔴 {item.get('headline', '제목 없음')}{ticker}")
+            lines.append(f"   💡 {item.get('analysis', '분석 내용이 제공되지 않았습니다.')}\n")
+            
+    return "\n".join(lines).strip()
 
 def run():
     print("Fetching RSS feeds...")
