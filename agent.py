@@ -29,9 +29,11 @@ def _format_report(stories: list[dict]) -> str:
             
             headline = item.get('headline') or item.get('headline_ko') or '제목 없음'
             analysis = item.get('analysis') or item.get('analysis_ko') or '분석 내용이 제공되지 않았습니다.'
+            source = item.get('source', '출처 미상')
             
             lines.append(f"🔴 {headline}{ticker}")
-            lines.append(f"   💡 {analysis}\n")
+            lines.append(f"   💡 {analysis}")
+            lines.append(f"   🔗 출처: {source}\n")
             
     return "\n".join(lines).strip()
 

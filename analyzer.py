@@ -19,10 +19,10 @@ You MUST respond strictly with a valid JSON array. Follow this exact structure:
   {
     "theme": "Portfolio Focus",
     "ticker": "PLTR",
-    "headline_en": "Palantir secures major defense contract",
-    "headline_ko": "팔란티어, 대규모 국방 계약 체결",
-    "analysis_en": "This contract solidifies Palantir's dominance in government software, expanding their ARR and establishing a strong moat.",
-    "analysis_ko": "이번 계약은 정부 소프트웨어 분야에서 팔란티어의 지배력을 공고히 하며, 연간 반복 매출(ARR)을 확대하고 강력한 해자를 구축합니다."
+    "importance": "high",
+    "headline": "팔란티어, 대규모 국방 계약 체결",
+    "analysis": "이번 계약은 정부 소프트웨어 분야에서 팔란티어의 지배력을 공고히 하며...",
+    "source": "https://finance.yahoo.com/news/..."
   }
 ]
 """
@@ -100,10 +100,9 @@ def analyze(stock_data: list[dict]) -> list[dict]:
                         "theme": item.get("theme", "Macro"),
                         "ticker": item.get("ticker", "None"),
                         "importance": item.get("importance", "medium"),
-                        "headline_en": item.get("headline_en", item.get("headline", "Untitled")),
-                        "headline_ko": item.get("headline_ko", item.get("headline", "제목 없음")),
-                        "analysis_en": item.get("analysis_en", item.get("summary", "No analysis provided.")),
-                        "analysis_ko": item.get("analysis_ko", item.get("summary", "분석 내용이 제공되지 않았습니다."))
+                        "headline": item.get("headline", item.get("headline_ko", "제목 없음")),
+                        "analysis": item.get("analysis", item.get("analysis_ko", "분석 내용이 제공되지 않았습니다.")),
+                        "source": item.get("source", "출처 미상") # <-- 새로 추가된 부분
                     }
                     normalized_list.append(normalized_item)
             return normalized_list
