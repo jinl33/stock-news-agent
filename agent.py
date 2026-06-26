@@ -27,8 +27,11 @@ def _format_report(stories: list[dict]) -> str:
         for item in items:
             ticker = f" [{item.get('ticker')}]" if item.get("ticker") and item.get("ticker") != "None" else ""
             
-            lines.append(f"🔴 {item.get('headline', '제목 없음')}{ticker}")
-            lines.append(f"   💡 {item.get('analysis', '분석 내용이 제공되지 않았습니다.')}\n")
+            headline = item.get('headline') or item.get('headline_ko') or '제목 없음'
+            analysis = item.get('analysis') or item.get('analysis_ko') or '분석 내용이 제공되지 않았습니다.'
+            
+            lines.append(f"🔴 {headline}{ticker}")
+            lines.append(f"   💡 {analysis}\n")
             
     return "\n".join(lines).strip()
 
