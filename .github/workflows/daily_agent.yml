@@ -19,7 +19,15 @@ jobs:
           python-version: '3.11' 
 
       - name: Install Dependencies
-        run: pip install requests feedparser ollama python-dotenv beautifulsoup4
+        run: pip install -r requirements.txt
+
+      - name: Restore Article Memory
+        uses: actions/cache@v4
+        with:
+          path: data/news.db
+          key: article-memory-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            article-memory-${{ runner.os }}-
 
       - name: Execute Autonomous Agent
         env:

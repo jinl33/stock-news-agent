@@ -1,5 +1,9 @@
+import argparse
+
 from fetcher import fetch_articles
 from analyzer import analyze
+from memory import cluster_articles, save_articles
+from report_builder import build_report
 from notifier import send_message
 
 _THEME_ICON = {
@@ -10,36 +14,17 @@ _THEME_ICON = {
 _IMPORTANCE_ICON = {"high": "🔴", "medium": "🟡"}
 
 def _format_report(stories: list[dict]) -> str:
-    if not stories:
-        return "오늘의 주요 시장 뉴스가 없습니다."
-    
-    lines = ["[Global Macro & Portfolio Intelligence]"]
-    lines.append("=======================")
-    
-    # Group by theme
-    grouped = {}
-    for s in stories:
-        theme = s.get("theme", "Macro")
-        grouped.setdefault(theme, []).append(s)
-        
-    for theme, items in grouped.items():
-        lines.append(f"\n📌 {theme.upper()}")
-        for item in items:
-            ticker = f" [{item.get('ticker')}]" if item.get("ticker") and item.get("ticker") != "None" else ""
-            
-            headline = item.get('headline') or item.get('headline_ko') or '제목 없음'
-            analysis = item.get('analysis') or item.get('analysis_ko') or '분석 내용이 제공되지 않았습니다.'
-            source = item.get('source', '출처 미상')
-            
-            lines.append(f"🔴 {headline}{ticker}")
-            lines.append(f"   💡 {analysis}")
-            lines.append(f"   🔗 출처: {source}\n")
-            
-    return "\n".join(lines).strip()
+    return build_report(stories)
 
 def run():
     print("Fetching RSS feeds...")
     stories = fetch_articles()
+    save_articles(stories)
+
+    clustered = cluster_articles(stories)
+    if clustered:
+        print(f"Detected {len(clustered)} clustered macro events.")
+        stories = [event["articles"][0] for event in clustered]
 
     print("Analyzing...")
     analyzed = analyze(stories)
@@ -48,14 +33,45 @@ def run():
         print("Inference failed or no actionable news found. Aborting alert.")
         return
 
-    report = _format_report(analyzed)
+    market_snapshot = {}
+    try:
+        from market import get_market_snapshot
+        market_snapshot = get_market_snapshot(["SPY", "QQQ", "^TNX", "^VIX"])
+    except Exception:
+        market_snapshot = {}
+
+    try:
+        from portfolio import infer_portfolio_impact
+        portfolio_context = infer_portfolio_impact(
+            " ".join((item.get("headline") or "") for item in analyzed),
+            ["MSFT", "AAPL", "AMZN", "PLTR"],
+        )
+    except Exception:
+        portfolio_context = []
+
+    report = build_report(analyzed, market_snapshot=market_snapshot, portfolio_context=portfolio_context)
     print("\n--- Report Preview ---")
     print(report)
     print("----------------------\n")
 
-    print("Sending KakaoTalk notification...")
-    send_message(report)
-    print("Done.")
+    return report
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Run the global macro + portfolio intelligence agent.")
+    parser.add_argument("--skip-send", action="store_true", help="Generate the report without sending to KakaoTalk.")
+    args = parser.parse_args()
+
+    report = run()
+    if args.skip_send:
+        print("Report generated without sending to KakaoTalk.")
+        return
+
+    if report:
+        print("Sending KakaoTalk notification...")
+        send_message(report)
+        print("Done.")
+
 
 if __name__ == "__main__":
-    run()
+    main()

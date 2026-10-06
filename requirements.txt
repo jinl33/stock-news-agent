@@ -4,3 +4,4 @@ python-dotenv
 ollama
 feedparser
 beautifulsoup4
+pytest

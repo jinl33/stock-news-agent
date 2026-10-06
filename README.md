@@ -1,13 +1,13 @@
 # Stock News Agent
 
-A local-first macro intelligence agent that fetches financial news, stores it in a persistent memory store, retrieves relevant historical and market context, and produces a compact macro + portfolio report.
+A cloud-first macro intelligence agent that fetches financial news, stores it in a local SQLite archive, retrieves relevant historical and market context, and produces a compact macro + portfolio report. GitHub Actions preserves the archive between runs using its cache.
 
 ## Features
 
 - RSS-based news fetching
 - deduplication and event clustering
 - local SQLite-backed article memory
-- lexical + semantic retrieval
+- lexical retrieval plus an optional embedding-assisted hybrid retrieval helper
 - market snapshot context
 - portfolio impact inference
 - report generation for Kakao output
@@ -47,7 +47,7 @@ This project defaults to the cloud Gemini workflow used by GitHub Actions, so it
 
 ## Scheduling
 
-You can run the agent on a cron schedule or via GitHub Actions. A typical cron entry looks like:
+You can run the agent on a cron schedule or via GitHub Actions. The Actions workflow restores and saves `data/news.db` through the GitHub Actions cache; the cache is subject to GitHub's retention and eviction policies. A typical cron entry looks like:
 
 ```bash
 0 9 * * 1-5 cd /path/to/stock-news-agent && python agent.py
